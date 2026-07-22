@@ -12,5 +12,7 @@ ZONES_PATH = DATA_DIR / "zones.geojson"
 PORTS_PATH = DATA_DIR / "ports.json"
 SPECIES_PATH = DATA_DIR / "species.json"
 SPECIES_PROFILES_PATH = DATA_DIR / "species_profiles.json"
+COOPS_STATIONS_PATH = DATA_DIR / "stations_coops.json"
+NDBC_STATIONS_PATH = DATA_DIR / "stations_ndbc.json"
 
 CORRIDOR = "south_florida"

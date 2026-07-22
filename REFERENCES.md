@@ -12,9 +12,9 @@ reference. **Update in the same commit** whenever one is introduced (see `docs/H
 | 2026-07-22 | SQLite (stdlib `sqlite3`) | tool | local data store (zone_conditions, catch_logs, trips, species, profiles) | https://docs.python.org/3/library/sqlite3.html |
 | 2026-07-22 | GeoJSON (RFC 7946) | doc | zone catalog file format (`data/zones.geojson`) | https://datatracker.ietf.org/doc/html/rfc7946 |
 | 2026-07-22 | GEBCO / NOAA bathymetry | dataset | source for zone depths/coordinates (used once to build the catalog) | https://www.gebco.net/ |
-
-<!--
-Environmental data feeds (HANDOFF §7) are added here in Phase 1 as each is wired in:
-NOAA CoastWatch / NASA Ocean Color (SST + chlorophyll), NOAA CO-OPS (tides/currents),
-NDBC buoys, Open-Meteo Marine (waves/wind/SST).
--->
+| 2026-07-22 | Open-Meteo Marine API | data feed | wave height/direction + SST fallback per zone (no key) | https://open-meteo.com/en/docs/marine-weather-api |
+| 2026-07-22 | Open-Meteo Forecast API | data feed | surface pressure (+3h trend), wind speed/direction per zone (no key) | https://open-meteo.com/en/docs |
+| 2026-07-22 | NOAA CoastWatch ERDDAP — JPL MUR SST (jplMURSST41) | data feed | sea-surface temp, break gradient, Florida Current edge distance | https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html |
+| 2026-07-22 | NOAA CoastWatch ERDDAP — S-NPP VIIRS chlorophyll (noaacwNPPVIIRSSQchlaDaily) | data feed | chlorophyll-a per zone (cloud gaps expected) | https://coastwatch.noaa.gov/erddap/griddap/noaacwNPPVIIRSSQchlaDaily.html |
+| 2026-07-22 | NOAA CO-OPS Tides & Currents API | API | hi/lo tide predictions → tide_state (nearest station) | https://api.tidesandcurrents.noaa.gov/api/prod/ |
+| 2026-07-22 | NDBC buoy real-time data | data feed | observed wind/wave/water-temp fallback (nearest buoy) | https://www.ndbc.noaa.gov/ |

@@ -1,0 +1,7 @@
+[
+  { "id": "VAKF1", "name": "Virginia Key, FL", "lat": 25.731, "lng": -80.162 },
+  { "id": "LKWF1", "name": "Lake Worth Pier, FL", "lat": 26.613, "lng": -80.034 },
+  { "id": "SMKF1", "name": "Sombrero Key, FL", "lat": 24.628, "lng": -81.109 },
+  { "id": "41009", "name": "Canaveral 20nm E", "lat": 28.508, "lng": -80.185 },
+  { "id": "41010", "name": "Canaveral East 120nm", "lat": 28.86, "lng": -78.478 }
+]
