@@ -73,3 +73,17 @@ def test_missing_conditions_still_scores_with_static_props(conn):
     out = recommend.recommend(conn, "haulover", 20, "mahi", DATE)
     assert out["results"]
     assert all(r["reasons"] for r in out["results"])
+
+
+def test_zone_features_merges_conditions_and_static_props(conn):
+    _insert_conditions(conn, "SF-HAULOVER-DROP-02", sst_f=79.5, dist_to_stream_edge_nm=2.0)
+    features, observed_at = recommend.zone_features(conn, "SF-HAULOVER-DROP-02", DATE)
+    assert observed_at == OBSERVED_AT
+    assert features["sst_f"] == 79.5
+    assert "depth_ft" in features and "structure" in features  # static props merged
+
+
+def test_zone_features_static_props_when_no_conditions(conn):
+    features, observed_at = recommend.zone_features(conn, "SF-HAULOVER-DROP-02", DATE)
+    assert observed_at is None
+    assert "depth_ft" in features and "structure" in features

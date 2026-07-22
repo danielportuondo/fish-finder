@@ -49,6 +49,21 @@ def _load_conditions(conn: sqlite3.Connection, zone_id: str, date: str) -> tuple
     return features, row["observed_at"]
 
 
+def zone_features(conn: sqlite3.Connection, zone_id: str, date: str) -> tuple[dict, str | None]:
+    """Full feature vector for a zone on ``date`` — exactly what the scorer sees.
+
+    Latest ``zone_conditions`` on/before ``date`` merged with the zone's static props
+    (``depth_ft``, ``structure``). ``observed_at`` is None when no environmental row resolved;
+    static props are still returned. Shared by the recommendation pipeline and catch logging so a
+    logged snapshot is identical to the recommendation the user acted on.
+    """
+    features, observed_at = _load_conditions(conn, zone_id, date)
+    zone = next((z for z in geo.load_zones() if z["zone_id"] == zone_id), None)
+    if zone is not None:
+        features = {**features, "depth_ft": zone["depth_ft"], "structure": zone["structure"]}
+    return features, observed_at
+
+
 def recommend(
     conn: sqlite3.Connection,
     port: str,

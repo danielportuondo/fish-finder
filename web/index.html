@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>fish-finder</title>
+</head>
+<body>
+  <h1>fish-finder — offshore recommendations</h1>
+
+  <form id="query">
+    <label>Port <select id="port" required></select></label>
+    <label>Range (nm) <input id="range_nm" type="number" value="30" min="1" step="1" required></label>
+    <label>Species <select id="species" required></select></label>
+    <label>Date <input id="date" type="date" required></label>
+    <button type="submit">Recommend</button>
+  </form>
+
+  <p id="status"></p>
+  <table id="results" border="1" cellpadding="4" hidden>
+    <thead>
+      <tr><th>Zone</th><th>Dist (nm)</th><th>Depth (ft)</th><th>Score</th><th>Why</th><th>Observed</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    // Anonymous device id, persisted locally (HANDOFF §5 — no auth in the MVP).
+    let deviceId = localStorage.getItem("ff_device_id");
+    if (!deviceId) {
+      deviceId = "dev-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem("ff_device_id", deviceId);
+    }
+
+    const $ = (id) => document.getElementById(id);
+    const setStatus = (msg) => { $("status").textContent = msg; };
+
+    async function loadMeta() {
+      const meta = await (await fetch("/meta")).json();
+      for (const p of meta.ports) {
+        $("port").add(new Option(p.name, p.code));
+      }
+      for (const s of meta.species) {
+        $("species").add(new Option(s.display_name, s.code));
+      }
+      $("date").value = new Date().toISOString().slice(0, 10);
+    }
+
+    async function logCatch(row, zoneId, date, species) {
+      const outcome = row.querySelector(".outcome").value;
+      const body = {
+        device_id: deviceId,
+        zone_id: zoneId,
+        date: date,
+        species: outcome === "skunked" ? null : species,
+        count: parseInt(row.querySelector(".count").value) || null,
+        notes: row.querySelector(".notes").value || null,
+        outcome: outcome,
+      };
+      const resp = await fetch("/catch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const out = await resp.json();
+      const msg = row.querySelector(".logmsg");
+      if (!resp.ok) {
+        msg.textContent = "Error: " + (out.detail || resp.status);
+        return;
+      }
+      msg.textContent = out.snapshot_incomplete
+        ? `Logged #${out.id} (snapshot INCOMPLETE — flagged, not dropped)`
+        : `Logged #${out.id} (full snapshot)`;
+    }
+
+    function catchCell(zoneId, date, species) {
+      const td = document.createElement("td");
+      td.innerHTML =
+        `<select class="outcome"><option value="caught">caught</option>` +
+        `<option value="skunked">skunked</option></select> ` +
+        `count <input class="count" type="number" min="0" size="3"> ` +
+        `<input class="notes" placeholder="notes" size="12"> ` +
+        `<button type="button">Log catch</button> <span class="logmsg"></span>`;
+      td.querySelector("button").addEventListener("click", () =>
+        logCatch(td.parentElement, zoneId, date, species)
+      );
+      return td;
+    }
+
+    async function recommend(ev) {
+      ev.preventDefault();
+      const port = $("port").value;
+      const range_nm = $("range_nm").value;
+      const species = $("species").value;
+      const date = $("date").value;
+      setStatus("Loading…");
+      const qs = new URLSearchParams({ port, range_nm, species, date });
+      const resp = await fetch("/recommendations?" + qs);
+      const out = await resp.json();
+      if (!resp.ok) {
+        setStatus("Error: " + (out.detail || resp.status));
+        return;
+      }
+      const tbody = $("results").querySelector("tbody");
+      tbody.innerHTML = "";
+      for (const r of out.results) {
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+          `<td>${r.name || r.zone_id}</td><td>${r.distance_nm}</td>` +
+          `<td>${r.depth_ft ?? ""}</td><td>${r.score}</td>` +
+          `<td>${r.reasons.join("; ")}</td><td>${r.observed_at ?? "—"}</td>`;
+        tr.appendChild(catchCell(r.zone_id, date, species));
+        tbody.appendChild(tr);
+      }
+      $("results").hidden = out.results.length === 0;
+      setStatus(`${out.results.length} zones for ${species} from ${out.query.port_name}.`);
+    }
+
+    $("query").addEventListener("submit", recommend);
+    loadMeta().catch((e) => setStatus("Failed to load metadata: " + e));
+  </script>
+</body>
+</html>

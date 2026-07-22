@@ -4,6 +4,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "data"
+WEB_DIR = REPO_ROOT / "web"
 DB_PATH = REPO_ROOT / "fishfinder.db"
 
 SCHEMA_PATH = Path(__file__).resolve().parent / "schema.sql"
