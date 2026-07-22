@@ -1,0 +1,66 @@
+[
+  {
+    "species_code": "mahi",
+    "version": 1,
+    "active": true,
+    "params": {
+      "sst_optimal_f": [78, 82],
+      "depth_ft": [120, 1000],
+      "prefers_structure": ["current_edge", "open", "weedline"],
+      "chlorophyll_pref": "break",
+      "current_edge_affinity": 0.9,
+      "pressure_response": "neutral",
+      "weedline_bonus": true,
+      "moon_affinity": 0.3,
+      "solunar_weight": 0.3
+    }
+  },
+  {
+    "species_code": "sailfish",
+    "version": 1,
+    "active": true,
+    "params": {
+      "sst_optimal_f": [68, 80],
+      "depth_ft": [90, 300],
+      "prefers_structure": ["current_edge", "reef_edge", "color_change"],
+      "chlorophyll_pref": "break",
+      "current_edge_affinity": 0.8,
+      "pressure_response": "falling",
+      "weedline_bonus": false,
+      "moon_affinity": 0.4,
+      "solunar_weight": 0.4
+    }
+  },
+  {
+    "species_code": "kingfish",
+    "version": 1,
+    "active": true,
+    "params": {
+      "sst_optimal_f": [68, 78],
+      "depth_ft": [40, 150],
+      "prefers_structure": ["reef", "wreck", "reef_edge"],
+      "chlorophyll_pref": "mixed",
+      "current_edge_affinity": 0.4,
+      "pressure_response": "neutral",
+      "weedline_bonus": false,
+      "moon_affinity": 0.3,
+      "solunar_weight": 0.3
+    }
+  },
+  {
+    "species_code": "wahoo",
+    "version": 1,
+    "active": true,
+    "params": {
+      "sst_optimal_f": [70, 82],
+      "depth_ft": [100, 1000],
+      "prefers_structure": ["dropoff", "hump", "current_edge"],
+      "chlorophyll_pref": "blue",
+      "current_edge_affinity": 0.7,
+      "pressure_response": "neutral",
+      "weedline_bonus": false,
+      "moon_affinity": 0.8,
+      "solunar_weight": 0.7
+    }
+  }
+]

@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.ruff_cache/
+.pytest_cache/
+
+# Local database (rebuilt from schema.sql + data/ via seed.py)
+*.db
+*.db-journal
+*.db-wal

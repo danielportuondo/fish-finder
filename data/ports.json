@@ -1,0 +1,23 @@
+[
+  {
+    "code": "haulover",
+    "name": "Haulover Inlet",
+    "lat": 25.9026,
+    "lng": -80.1206,
+    "corridor": "south_florida"
+  },
+  {
+    "code": "government_cut",
+    "name": "Government Cut (Miami)",
+    "lat": 25.7657,
+    "lng": -80.1300,
+    "corridor": "south_florida"
+  },
+  {
+    "code": "islamorada",
+    "name": "Islamorada (Snake Creek)",
+    "lat": 24.9540,
+    "lng": -80.6200,
+    "corridor": "south_florida"
+  }
+]

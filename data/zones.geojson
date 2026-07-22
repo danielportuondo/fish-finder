@@ -1,0 +1,154 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "corridor": "south_florida",
+    "note": "Approximate offshore zone centroids for the South Florida corridor. Coordinates are plausible seed values (reef edge / Gulf Stream drops / Keys humps), to be refined with GEBCO/NOAA bathymetry. Point geometry is sufficient for haversine range filtering.",
+    "coordinate_order": "[lng, lat]"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-80.070, 25.902] },
+      "properties": {
+        "zone_id": "SF-HAULOVER-EDGE-01",
+        "name": "Haulover 145 Line",
+        "corridor": "south_florida",
+        "depth_ft": 145,
+        "structure": ["reef_edge", "current_edge"],
+        "notes": "reef edge off Haulover Inlet"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-80.048, 25.900] },
+      "properties": {
+        "zone_id": "SF-HAULOVER-DROP-02",
+        "name": "Haulover 480 Line",
+        "corridor": "south_florida",
+        "depth_ft": 480,
+        "structure": ["dropoff", "current_edge"],
+        "notes": "outer dropoff / color-change zone"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-80.078, 25.940] },
+      "properties": {
+        "zone_id": "SF-NMB-LEDGE-03",
+        "name": "North Miami Ledge",
+        "corridor": "south_florida",
+        "depth_ft": 220,
+        "structure": ["reef_edge", "dropoff"],
+        "notes": "ledge north of Haulover"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-80.092, 25.762] },
+      "properties": {
+        "zone_id": "SF-MIAMI-EDGE-04",
+        "name": "Government Cut Sea Buoy",
+        "corridor": "south_florida",
+        "depth_ft": 120,
+        "structure": ["reef_edge"],
+        "notes": "reef edge off Government Cut"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-80.052, 25.750] },
+      "properties": {
+        "zone_id": "SF-MIAMI-TERRACE-05",
+        "name": "Miami Terrace Drop",
+        "corridor": "south_florida",
+        "depth_ft": 600,
+        "structure": ["dropoff", "current_edge"],
+        "notes": "Miami Terrace shelf break"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-79.980, 25.720] },
+      "properties": {
+        "zone_id": "SF-MIAMI-STREAM-06",
+        "name": "Miami Gulf Stream Edge",
+        "corridor": "south_florida",
+        "depth_ft": 1200,
+        "structure": ["current_edge", "open"],
+        "notes": "Florida Current edge east of Miami"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-80.078, 25.680] },
+      "properties": {
+        "zone_id": "SF-MIAMI-409-07",
+        "name": "The 409",
+        "corridor": "south_florida",
+        "depth_ft": 409,
+        "structure": ["dropoff", "wreck"],
+        "notes": "deep drop / wreck south of the Cut"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-79.900, 25.800] },
+      "properties": {
+        "zone_id": "SF-OFFSHORE-BLUE-08",
+        "name": "East Miami Bluewater",
+        "corridor": "south_florida",
+        "depth_ft": 1800,
+        "structure": ["open", "current_edge"],
+        "notes": "open bluewater run offshore"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-80.450, 24.900] },
+      "properties": {
+        "zone_id": "SF-ISLA-HUMP-09",
+        "name": "Islamorada Hump",
+        "corridor": "south_florida",
+        "depth_ft": 480,
+        "structure": ["hump", "current_edge"],
+        "notes": "seamount rising into the current off Islamorada"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-80.550, 24.850] },
+      "properties": {
+        "zone_id": "SF-ISLA-ALLIGATOR-10",
+        "name": "Alligator Light Edge",
+        "corridor": "south_florida",
+        "depth_ft": 180,
+        "structure": ["reef_edge"],
+        "notes": "reef edge near Alligator Reef Light"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-80.500, 24.800] },
+      "properties": {
+        "zone_id": "SF-ISLA-TENN-11",
+        "name": "Tennessee Hump",
+        "corridor": "south_florida",
+        "depth_ft": 500,
+        "structure": ["hump", "dropoff"],
+        "notes": "deep hump southeast of Islamorada"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-80.500, 24.920] },
+      "properties": {
+        "zone_id": "SF-ISLA-EDGE-12",
+        "name": "Islamorada Reef Edge",
+        "corridor": "south_florida",
+        "depth_ft": 120,
+        "structure": ["reef_edge", "current_edge"],
+        "notes": "shallow reef edge off Snake Creek"
+      }
+    }
+  ]
+}

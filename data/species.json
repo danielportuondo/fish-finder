@@ -1,0 +1,6 @@
+[
+  { "code": "mahi", "display_name": "Mahi (Dolphinfish)" },
+  { "code": "sailfish", "display_name": "Sailfish" },
+  { "code": "kingfish", "display_name": "Kingfish (King Mackerel)" },
+  { "code": "wahoo", "display_name": "Wahoo" }
+]
