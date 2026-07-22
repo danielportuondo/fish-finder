@@ -96,3 +96,59 @@ def test_bad_outcome_raises(conn):
 def test_caught_at_defaults_to_date(conn):
     out = catchlog.log_catch(conn, device_id="d1", zone_id=ZONE, date=DATE, species="mahi")
     assert _row(conn, out["id"])["caught_at"] == f"{DATE}T12:00:00Z"
+
+
+def test_log_catch_sets_trip_id(conn):
+    cur = conn.execute("INSERT INTO trips (device_id) VALUES ('d1')")
+    trip_id = cur.lastrowid
+    out = catchlog.log_catch(
+        conn, device_id="d1", zone_id=ZONE, date=DATE, species="mahi", trip_id=trip_id
+    )
+    assert out["trip_id"] == trip_id
+    assert _row(conn, out["id"])["trip_id"] == trip_id
+
+
+def test_log_trip_groups_rows_and_captures_negatives(conn):
+    _insert_conditions(conn, ZONE, sst_f=79.5)
+    out = catchlog.log_trip(
+        conn,
+        device_id="d1",
+        port="haulover",
+        range_nm=25,
+        target_species=["mahi"],
+        date=DATE,
+        zones=[
+            {"zone_id": ZONE, "outcome": "caught", "species": "mahi", "count": 2},
+            {"zone_id": "SF-MIAMI-EDGE-04", "outcome": "skunked"},
+        ],
+    )
+    trip_id = out["trip_id"]
+    assert len(out["logged"]) == 2
+
+    trip = conn.execute("SELECT * FROM trips WHERE id = ?", (trip_id,)).fetchone()
+    assert trip["port_id"] is not None
+    assert json.loads(trip["target_species"]) == ["mahi"]
+    assert json.loads(trip["zones_fished"]) == [ZONE, "SF-MIAMI-EDGE-04"]
+
+    rows = conn.execute(
+        "SELECT outcome, species_id, trip_id FROM catch_logs WHERE trip_id = ? ORDER BY id",
+        (trip_id,),
+    ).fetchall()
+    assert [r["trip_id"] for r in rows] == [trip_id, trip_id]
+    assert rows[0]["outcome"] == "caught"
+    # The negative: skunked zone with no species is a labeled row, not dropped.
+    assert rows[1]["outcome"] == "skunked"
+    assert rows[1]["species_id"] is None
+
+
+def test_log_trip_unknown_port_raises(conn):
+    with pytest.raises(ValueError, match="unknown port"):
+        catchlog.log_trip(
+            conn,
+            device_id="d1",
+            port="nowhere",
+            range_nm=25,
+            target_species=["mahi"],
+            date=DATE,
+            zones=[{"zone_id": ZONE, "outcome": "caught", "species": "mahi"}],
+        )

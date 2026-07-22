@@ -86,3 +86,39 @@ def log_catch(body: CatchIn) -> dict:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     finally:
         conn.close()
+
+
+class TripZone(BaseModel):
+    zone_id: str
+    outcome: str = "caught"
+    species: str | None = None  # code; None only for a skunked/negative zone
+    count: int | None = None
+    notes: str | None = None
+
+
+class TripIn(BaseModel):
+    device_id: str
+    port: str  # launch point code
+    range_nm: float
+    target_species: list[str]
+    date: str  # YYYY-MM-DD; resolves each zone's conditions snapshot
+    zones: list[TripZone]
+
+
+@app.post("/trip")
+def log_trip(body: TripIn) -> dict:
+    conn = db.connect(config.DB_PATH)
+    try:
+        return catchlog.log_trip(
+            conn,
+            device_id=body.device_id,
+            port=body.port,
+            range_nm=body.range_nm,
+            target_species=body.target_species,
+            date=body.date,
+            zones=[z.model_dump() for z in body.zones],
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    finally:
+        conn.close()

@@ -9,3 +9,6 @@ __pycache__/
 *.db
 *.db-journal
 *.db-wal
+
+# Playwright MCP session artifacts
+.playwright-mcp/

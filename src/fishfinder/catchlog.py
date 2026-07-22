@@ -33,12 +33,14 @@ def log_catch(
     notes: str | None = None,
     outcome: str = "caught",
     caught_at: str | None = None,
+    trip_id: int | None = None,
 ) -> dict:
     """Insert one catch_logs row with a resolved conditions snapshot.
 
-    ``species`` is a species code (None only for a skunked/negative log). The snapshot is the same
-    feature vector the recommendation showed (recommend.zone_features); snapshot_incomplete is set
-    when no environmental conditions row resolved.
+    ``species`` is a species code (None only for a skunked/negative log). ``trip_id`` groups the row
+    under a trips row (None for a standalone log). The snapshot is the same feature vector the
+    recommendation showed (recommend.zone_features); snapshot_incomplete is set when no environmental
+    conditions row resolved.
     """
     if outcome not in _OUTCOMES:
         raise ValueError(f"invalid outcome: {outcome!r} (want one of {_OUTCOMES})")
@@ -52,11 +54,12 @@ def log_catch(
 
     cur = conn.execute(
         "INSERT INTO catch_logs "
-        "(device_id, species_id, zone_id, caught_at, count, notes, outcome, "
+        "(device_id, trip_id, species_id, zone_id, caught_at, count, notes, outcome, "
         " conditions_snapshot, snapshot_incomplete) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (
             device_id,
+            trip_id,
             species_id,
             zone_id,
             caught_at,
@@ -70,9 +73,67 @@ def log_catch(
     conn.commit()
     return {
         "id": cur.lastrowid,
+        "trip_id": trip_id,
         "zone_id": zone_id,
         "species": species,
         "outcome": outcome,
         "snapshot_incomplete": snapshot_incomplete,
         "observed_at": observed_at,
     }
+
+
+def _resolve_port_id(conn: sqlite3.Connection, port: str) -> int:
+    row = conn.execute("SELECT id FROM ports WHERE code = ?", (port,)).fetchone()
+    if row is None:
+        raise ValueError(f"unknown port: {port!r}")
+    return row["id"]
+
+
+def log_trip(
+    conn: sqlite3.Connection,
+    *,
+    device_id: str,
+    port: str,
+    range_nm: float,
+    target_species: list[str],
+    date: str,
+    zones: list[dict],
+) -> dict:
+    """Record one fishing trip: a trips row plus a catch_logs row per zone fished.
+
+    ``zones`` is a list of ``{zone_id, outcome, species?, count?, notes?}``. A zone with
+    ``outcome='skunked'`` becomes a negative label — the thing crowdsourced apps under-collect
+    (HANDOFF §2.3). Every row is grouped under the new trip_id and gets a conditions snapshot, so
+    negatives are as fully labeled as positives.
+    """
+    port_id = _resolve_port_id(conn, port)
+    cur = conn.execute(
+        "INSERT INTO trips (device_id, port_id, range_nm, target_species, trip_date, zones_fished) "
+        "VALUES (?, ?, ?, ?, ?, ?)",
+        (
+            device_id,
+            port_id,
+            range_nm,
+            json.dumps(target_species),
+            date,
+            json.dumps([z["zone_id"] for z in zones]),
+        ),
+    )
+    trip_id = cur.lastrowid
+
+    logged = [
+        log_catch(
+            conn,
+            device_id=device_id,
+            zone_id=z["zone_id"],
+            date=date,
+            species=z.get("species"),
+            count=z.get("count"),
+            notes=z.get("notes"),
+            outcome=z.get("outcome", "caught"),
+            trip_id=trip_id,
+        )
+        for z in zones
+    ]
+    conn.commit()  # ensure the trips row persists even when zones is empty
+    return {"trip_id": trip_id, "logged": logged}

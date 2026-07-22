@@ -115,3 +115,47 @@ def test_post_catch_unknown_species_400(client):
     )
     assert resp.status_code == 400
     assert "unknown species" in resp.json()["detail"]
+
+
+def test_post_trip_groups_and_captures_negative(client):
+    resp = client.post(
+        "/trip",
+        json={
+            "device_id": "d1",
+            "port": "haulover",
+            "range_nm": 25,
+            "target_species": ["mahi"],
+            "date": DATE,
+            "zones": [
+                {
+                    "zone_id": "SF-HAULOVER-DROP-02",
+                    "outcome": "caught",
+                    "species": "mahi",
+                    "count": 2,
+                },
+                {"zone_id": "SF-MIAMI-EDGE-04", "outcome": "skunked"},
+            ],
+        },
+    )
+    assert resp.status_code == 200
+    out = resp.json()
+    assert out["trip_id"]
+    assert len(out["logged"]) == 2
+    assert [row["trip_id"] for row in out["logged"]] == [out["trip_id"], out["trip_id"]]
+    assert any(row["outcome"] == "skunked" for row in out["logged"])
+
+
+def test_post_trip_unknown_port_400(client):
+    resp = client.post(
+        "/trip",
+        json={
+            "device_id": "d1",
+            "port": "nowhere",
+            "range_nm": 25,
+            "target_species": ["mahi"],
+            "date": DATE,
+            "zones": [{"zone_id": "SF-HAULOVER-DROP-02", "outcome": "caught", "species": "mahi"}],
+        },
+    )
+    assert resp.status_code == 400
+    assert "unknown port" in resp.json()["detail"]

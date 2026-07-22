@@ -19,10 +19,14 @@
   <p id="status"></p>
   <table id="results" border="1" cellpadding="4" hidden>
     <thead>
-      <tr><th>Zone</th><th>Dist (nm)</th><th>Depth (ft)</th><th>Score</th><th>Why</th><th>Observed</th><th></th></tr>
+      <tr><th>Zone</th><th>Dist (nm)</th><th>Depth (ft)</th><th>Score</th><th>Why</th><th>Observed</th><th>Fished?</th><th></th></tr>
     </thead>
     <tbody></tbody>
   </table>
+  <p id="trip" hidden>
+    <button type="button" id="savetrip">Save trip (log every fished zone, incl. skunked negatives)</button>
+    <span id="tripmsg"></span>
+  </p>
 
   <script>
     // Anonymous device id, persisted locally (HANDOFF §5 — no auth in the MVP).
@@ -73,6 +77,12 @@
         : `Logged #${out.id} (full snapshot)`;
     }
 
+    function fishedCell() {
+      const td = document.createElement("td");
+      td.innerHTML = `<input type="checkbox" class="fished" title="I fished this zone">`;
+      return td;
+    }
+
     function catchCell(zoneId, date, species) {
       const td = document.createElement("td");
       td.innerHTML =
@@ -87,12 +97,59 @@
       return td;
     }
 
+    // The query behind the ranked table, so "Save trip" can reuse port/range/species/date.
+    let lastQuery = null;
+
+    async function saveTrip() {
+      if (!lastQuery) return;
+      const zones = [];
+      for (const tr of $("results").querySelectorAll("tbody tr")) {
+        if (!tr.querySelector(".fished").checked) continue;
+        const outcome = tr.querySelector(".outcome").value;
+        zones.push({
+          zone_id: tr.dataset.zoneId,
+          outcome: outcome,
+          species: outcome === "skunked" ? null : lastQuery.species,
+          count: parseInt(tr.querySelector(".count").value) || null,
+          notes: tr.querySelector(".notes").value || null,
+        });
+      }
+      const msg = $("tripmsg");
+      if (zones.length === 0) {
+        msg.textContent = "Check the zones you fished first.";
+        return;
+      }
+      const body = {
+        device_id: deviceId,
+        port: lastQuery.port,
+        range_nm: parseFloat(lastQuery.range_nm),
+        target_species: [lastQuery.species],
+        date: lastQuery.date,
+        zones: zones,
+      };
+      const resp = await fetch("/trip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const out = await resp.json();
+      if (!resp.ok) {
+        msg.textContent = "Error: " + (out.detail || resp.status);
+        return;
+      }
+      const skunked = out.logged.filter((l) => l.outcome === "skunked").length;
+      msg.textContent =
+        `Trip #${out.trip_id}: ${out.logged.length} zones logged ` +
+        `(${skunked} skunked negative${skunked === 1 ? "" : "s"}).`;
+    }
+
     async function recommend(ev) {
       ev.preventDefault();
       const port = $("port").value;
       const range_nm = $("range_nm").value;
       const species = $("species").value;
       const date = $("date").value;
+      lastQuery = { port, range_nm, species, date };
       setStatus("Loading…");
       const qs = new URLSearchParams({ port, range_nm, species, date });
       const resp = await fetch("/recommendations?" + qs);
@@ -105,18 +162,24 @@
       tbody.innerHTML = "";
       for (const r of out.results) {
         const tr = document.createElement("tr");
+        tr.dataset.zoneId = r.zone_id;
         tr.innerHTML =
           `<td>${r.name || r.zone_id}</td><td>${r.distance_nm}</td>` +
           `<td>${r.depth_ft ?? ""}</td><td>${r.score}</td>` +
           `<td>${r.reasons.join("; ")}</td><td>${r.observed_at ?? "—"}</td>`;
+        tr.appendChild(fishedCell());
         tr.appendChild(catchCell(r.zone_id, date, species));
         tbody.appendChild(tr);
       }
-      $("results").hidden = out.results.length === 0;
+      const hasResults = out.results.length > 0;
+      $("results").hidden = !hasResults;
+      $("trip").hidden = !hasResults;
+      $("tripmsg").textContent = "";
       setStatus(`${out.results.length} zones for ${species} from ${out.query.port_name}.`);
     }
 
     $("query").addEventListener("submit", recommend);
+    $("savetrip").addEventListener("click", saveTrip);
     loadMeta().catch((e) => setStatus("Failed to load metadata: " + e));
   </script>
 </body>
