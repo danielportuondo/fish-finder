@@ -22,3 +22,4 @@ reference. **Update in the same commit** whenever one is introduced (see `docs/H
 | 2026-07-22 | NDBC buoy real-time data | data feed | observed wind/wave/water-temp fallback (nearest buoy) | https://www.ndbc.noaa.gov/ |
 | 2026-07-22 | FastAPI | lib | HTTP layer for GET /recommendations (optional `serve` extra) | https://fastapi.tiangolo.com/ |
 | 2026-07-22 | uvicorn | lib | ASGI server running the FastAPI app (optional `serve` extra) | https://www.uvicorn.org/ |
+| 2026-07-23 | Logistic regression (pure-Python, no dep) | doc | Phase 5 per-species learned scorer; standardized + L2-regularized, hot-swaps the rule scorer via the shared `score()` contract | https://en.wikipedia.org/wiki/Logistic_regression |

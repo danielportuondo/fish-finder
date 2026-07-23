@@ -4,6 +4,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "data"
+MODELS_DIR = DATA_DIR / "models"  # trained per-species model artifacts (derived, gitignored)
 WEB_DIR = REPO_ROOT / "web"
 DB_PATH = REPO_ROOT / "fishfinder.db"
 

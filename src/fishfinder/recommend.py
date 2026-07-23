@@ -4,11 +4,9 @@ Pure Python + SQLite; no web framework import so it stays portable (Cloudflare P
 later). Unknown port/species raise ValueError so the HTTP layer can map them to 400.
 """
 
-import json
 import sqlite3
 
-from . import geo
-from . import scorer as scorer_mod
+from . import geo, scoring
 
 # zone_conditions columns that are not part of the scorable feature vector.
 _NON_FEATURE_COLS = {"id", "zone_id", "observed_at", "source_meta"}
@@ -19,18 +17,6 @@ def _load_port(conn: sqlite3.Connection, code: str) -> dict:
     if row is None:
         raise ValueError(f"unknown port: {code!r}")
     return dict(row)
-
-
-def _load_profile(conn: sqlite3.Connection, species: str) -> dict:
-    row = conn.execute(
-        "SELECT sp.params FROM species_profiles sp "
-        "JOIN species s ON s.id = sp.species_id "
-        "WHERE s.code = ? AND sp.active = 1",
-        (species,),
-    ).fetchone()
-    if row is None:
-        raise ValueError(f"unknown species or no active profile: {species!r}")
-    return json.loads(row["params"])
 
 
 def _load_conditions(conn: sqlite3.Connection, zone_id: str, date: str) -> tuple[dict, str | None]:
@@ -74,7 +60,7 @@ def recommend(
 ) -> dict:
     """Rank reachable zones for one species on ``date``. Every result carries reasons."""
     port_row = _load_port(conn, port)
-    profile = _load_profile(conn, species)
+    score_fn, profile = scoring.resolve(conn, species)  # model if promoted, else rules
 
     results = []
     for zone in geo.load_zones():
@@ -83,7 +69,7 @@ def recommend(
             continue
         features, observed_at = _load_conditions(conn, zone["zone_id"], date)
         features = {**features, "depth_ft": zone["depth_ft"], "structure": zone["structure"]}
-        value, reasons = scorer_mod.score(features, profile)
+        value, reasons = score_fn(features, profile)
         results.append(
             {
                 "zone_id": zone["zone_id"],
